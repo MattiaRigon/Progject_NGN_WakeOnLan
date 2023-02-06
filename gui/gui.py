@@ -8,9 +8,19 @@
 
 
 from PyQt5 import QtCore, QtGui, QtWidgets
+import requests
 
 elenco_docker= ["docker1","docker2","docker3","docker4","docker5"]
 docker_selected = ""
+
+
+data = {
+    "action": "TurnOn",
+    "DockerID": "docker1",
+}
+
+RSP_1_active = [""]
+RSP_2_active = [""]
 
 class Ui_MainWindow(object):
     def setupUi(self, MainWindow):
@@ -93,6 +103,10 @@ class Ui_MainWindow(object):
         global docker_selected
 
         print("Richiesta TURN ON docker : " + docker_selected)
+        data["action"] = "TurnOn"
+        data["DockerID"] = docker_selected
+        r = requests.post('http://192.168.1.70:8000/',json=data)
+
 
 
     # method called by Turn Off button
@@ -101,6 +115,10 @@ class Ui_MainWindow(object):
         global docker_selected
 
         print("Richiesta TURN OFF docker : " + docker_selected)
+        data["action"] = "TurnOff"
+        data["DockerID"] = docker_selected
+        r = requests.post('http://192.168.1.70:8000/',json=data)
+
     
     
         
