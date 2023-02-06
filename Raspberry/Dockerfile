@@ -1,2 +1,11 @@
-FROM httpd:2.4
-COPY ./web-app/ /usr/local/apache2/htdocs/
+# Use an official NGINX image as the base image
+FROM nginx:alpine
+
+# Copy the HTML file to the default NGINX directory
+COPY docker2.html /usr/share/nginx/html/index.html
+
+# Expose port 80 to allow incoming traffic
+EXPOSE 80
+
+# Run the NGINX command to start the server
+CMD ["nginx", "-g", "daemon off;"]
