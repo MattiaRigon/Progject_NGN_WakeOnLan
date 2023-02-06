@@ -17,7 +17,7 @@ SERVER_IP = 'http://192.168.1.70:8000/'
 
 data = {
     "action": "TurnOn",
-    "DockerID": "docker1",
+    "DockerID": "1",
 }
 
 RSP_1_active = [""]
@@ -53,11 +53,11 @@ class Ui_MainWindow(object):
         self.turnonButton = QtWidgets.QPushButton(self.centralwidget)
         self.turnonButton.setGeometry(QtCore.QRect(160, 490, 201, 51))
         self.turnonButton.setObjectName("turnonButton")
-        self.turnonButton.clicked.connect(self.turnonCallback)
+        self.turnonButton.clicked.connect(self.turnon)
         self.turnofButton = QtWidgets.QPushButton(self.centralwidget)
         self.turnofButton.setGeometry(QtCore.QRect(440, 490, 201, 51))
         self.turnofButton.setObjectName("turnofButton")
-        self.turnofButton.clicked.connect(self.turnofCallback)
+        self.turnofButton.clicked.connect(self.turnoff)
         MainWindow.setCentralWidget(self.centralwidget)
         self.menubar = QtWidgets.QMenuBar(MainWindow)
         self.menubar.setGeometry(QtCore.QRect(0, 0, 800, 22))
@@ -99,7 +99,7 @@ class Ui_MainWindow(object):
                 docker_selected = radio_button.text()
     
     # method called by Turn On button
-    def turnonCallback(self):
+    def turnon(self):
 
         global docker_selected
 
@@ -111,7 +111,7 @@ class Ui_MainWindow(object):
 
 
     # method called by Turn Off button
-    def turnofCallback(self):
+    def turnoff(self):
 
         global docker_selected
 
