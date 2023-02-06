@@ -105,7 +105,7 @@ class Ui_MainWindow(object):
 
         print("Richiesta TURN ON docker : " + docker_selected)
         data["action"] = "TurnOn"
-        data["DockerID"] = docker_selected.replace(docker_selected,"docker")
+        data["DockerID"] = docker_selected.replace("docker","")
         
         r = requests.post(SERVER_IP,json=data)
 
@@ -118,7 +118,7 @@ class Ui_MainWindow(object):
 
         print("Richiesta TURN OFF docker : " + docker_selected)
         data["action"] = "TurnOff"
-        data["DockerID"] = docker_selected.replace(docker_selected,"docker")
+        data["DockerID"] = docker_selected.replace("docker","")
 
         r = requests.post(SERVER_IP,json=data)
 
