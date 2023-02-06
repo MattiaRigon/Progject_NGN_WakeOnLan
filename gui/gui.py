@@ -10,8 +10,9 @@
 from PyQt5 import QtCore, QtGui, QtWidgets
 import requests
 
-elenco_docker= ["docker1","docker2","docker3","docker4","docker5"]
+elenco_docker= ["1","2","3"]
 docker_selected = ""
+SERVER_IP = 'http://192.168.1.70:8000/'
 
 
 data = {
@@ -79,7 +80,7 @@ class Ui_MainWindow(object):
 "<p align=\"center\" style=\" margin-top:0px; margin-bottom:0px; margin-left:0px; margin-right:0px; -qt-block-indent:0; text-indent:0px;\"><span style=\" font-size:18pt;\">LIST OF DOCKERS</span></p></body></html>"))
         i=0
         for item in elenco_docker :
-            self.radioButton[i].setText(_translate("MainWindow", item))
+            self.radioButton[i].setText(_translate("MainWindow","docker"+ item))
             i=i+1
         self.turnonButton.setText(_translate("MainWindow", "Turn ON"))
         self.turnofButton.setText(_translate("MainWindow", "Turn OFF"))
@@ -105,7 +106,7 @@ class Ui_MainWindow(object):
         print("Richiesta TURN ON docker : " + docker_selected)
         data["action"] = "TurnOn"
         data["DockerID"] = docker_selected
-        r = requests.post('http://192.168.1.70:8000/',json=data)
+        r = requests.post(SERVER_IP,json=data)
 
 
 
@@ -117,7 +118,7 @@ class Ui_MainWindow(object):
         print("Richiesta TURN OFF docker : " + docker_selected)
         data["action"] = "TurnOff"
         data["DockerID"] = docker_selected
-        r = requests.post('http://192.168.1.70:8000/',json=data)
+        r = requests.post(SERVER_IP,json=data)
 
     
     
