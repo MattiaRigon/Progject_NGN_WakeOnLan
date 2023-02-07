@@ -1,7 +1,6 @@
 from scapy.all import *
 import os
 
-
 def packet_callback(packet):
     if packet[UDP].dport == 9:
         print("Magic packet detected!")
