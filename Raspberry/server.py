@@ -43,22 +43,8 @@ class MyServer(BaseHTTPRequestHandler):
         self.send_response(200)
         self.end_headers()
         n = os.popen('docker ps | grep Up | wc -l').read()   #get the number of active containers 
-        
-        names = []
-        client = docker.from_env()
-        for container in client.containers.list():
-            t = container.image.tags[0]
-            t = t.replace(":latest", "")
-            names.append(t)        
-        
-        msg = {
-            "n": n,
-            "names": names
-        }
-        
-        msg = json.dumps(msg)
-        self.wfile.write(msg.encode('utf-8'))  #send n
-        
+        self.wfile.write(n.encode('utf-8'))  #send n
+  
         return
 
     def do_POST(self):
