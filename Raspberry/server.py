@@ -9,36 +9,31 @@ def turnOn(data):
 
     ps = os.popen('docker ps').read()
     if(data["DockerID"] in ps):
-        print("Container già in esecuzione ! ")
+        print("----- Container già in esecuzione! -----")
         print(ps)
     else:
-        print("Eseguo il container con image : " + data["DockerID"])
+        print("----- Eseguo il container con image : docker" + data["DockerID"] + " -----")
         client = docker.from_env()
-        #container = client.containers.run(data["DockerID"], "sleep infinity", detach=True)    
-        #container = client.containers.run(data["DockerID"], "tail -f /dev/null", detach=True)     #docker run -d docker1 sh -c 'while sleep 3600; do :; done'
-        container = client.containers.run(data["DockerID"], detach=True)
+        porta = "800"+data["DockerID"]
+        container = client.containers.run("docker"+data["DockerID"], ports={80:int(porta)}, detach=True)
         ps = os.popen('docker ps -a').read()
-        print(ps)
-        
-        
+        print(ps)        
     
 
 def turnOff(data):
 
     ps = os.popen('docker ps').read()
     if(data["DockerID"] not in ps):
-        print("Container non in esecuzione ! Impossibile spegnerlo ")
-        #print(ps)
+        print("----- Container non in esecuzione! Impossibile spegnerlo -----")
     else:
-        print("Stoppo il container con image : " + data["DockerID"])
+        print("----- Stoppo il container con image : docker" + data["DockerID"] + " -----")
         client = docker.from_env()
         container_list = client.containers.list()
         for container in container_list:
-            if(data["DockerID"]+":latest" == container.image.tags[0]):
+            if("docker"+data["DockerID"]+":latest" == container.image.tags[0]):
                 cont = client.containers.get(container.short_id)
                 cont.stop()
-        ps = os.popen('docker ps -a').read()
-    
+        ps = os.popen('docker ps -a').read()    
     print(ps)
 
 
@@ -47,7 +42,23 @@ class MyServer(BaseHTTPRequestHandler):
     def do_GET(self):
         self.send_response(200)
         self.end_headers()
-    
+        n = os.popen('docker ps | grep Up | wc -l').read()   #get the number of active containers 
+        
+        names = []
+        client = docker.from_env()
+        for container in client.containers.list():
+            t = container.image.tags[0]
+            t = t.replace(":latest", "")
+            names.append(t)        
+        
+        msg = {
+            "n": n,
+            "names": names
+        }
+        
+        msg = json.dumps(msg)
+        self.wfile.write(msg.encode('utf-8'))  #send n
+        
         return
 
     def do_POST(self):
@@ -58,19 +69,14 @@ class MyServer(BaseHTTPRequestHandler):
             turnOn(data)
         elif(data["action"] == "TurnOff"):
             turnOff(data)
-
         self.end_headers()
 
-        # os.path.dirname(os.path.abspath(__file__))
-        # esecuzione = os.popen('./wakeon.sh {0}'.format(text.decode('utf-8'))).read()
-        # print(esecuzione)
         return
 
 if __name__ == '__main__':
-# Creiamo un oggetto HTTPServer che ascolterà sulla porta 8000
     server = HTTPServer(('', 8000), MyServer)
     print('Server in esecuzione...')
-# Avvio server
+    # Avvio server
     try:
         server.serve_forever()
     except KeyboardInterrupt:
