@@ -271,12 +271,10 @@ class Ui_MainWindow(object):
             else :
                 data["port"] = None
             
-            print(data)
-            r = data# requests.post(SERVER_IP,json=data)
-            #print(r.text)
+            r = requests.post(SERVER_IP,json=data)
             if(len(ultime_azioni) >2):
                 ultime_azioni.pop(0)
-            ultime_azioni.append(str(r))
+            ultime_azioni.append(str(r.text))
 
             self.update_azioni()
             
@@ -298,11 +296,10 @@ class Ui_MainWindow(object):
             data["port"] = None
             
         print(data)
-        r = data# requests.post(SERVER_IP,json=data)
-        #print(r.text)
+        r = requests.post(SERVER_IP,json=data)
         if(len(ultime_azioni) >2):
             ultime_azioni.pop(0)
-        ultime_azioni.append(str(r))
+        ultime_azioni.append(str(r.text))
 
         self.update_azioni()
     
