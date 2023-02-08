@@ -4,20 +4,31 @@ import os
 import json
 import docker
 from time import sleep
+#from termcolor import colored
 
-def turnOn(data):
+MAX_CONTAINERS = 3
+ports = {}
 
-    ps = os.popen('docker ps').read()
-    if(data["DockerID"] in ps):
-        print("----- Container già in esecuzione! -----")
-        print(ps)
-    else:
-        print("----- Eseguo il container con image : docker" + data["DockerID"] + " -----")
-        client = docker.from_env()
-        porta = "800"+data["DockerID"]
-        container = client.containers.run("docker"+data["DockerID"], ports={80:int(porta)}, detach=True)
-        ps = os.popen('docker ps -a').read()
-        print(ps)        
+for i in range(1,MAX_CONTAINERS+1):
+    ports[f"{i}"] = {
+        "port": 8000+i,
+        "containerID": None,   #Short ID del container
+        "container": None      #Numero del container (1/2/3)
+    }
+
+def turnOn(data, chosenPort):
+    client = docker.from_env()
+    print("----- Eseguo il container con image : docker" + data["DockerID"] + " -----")
+    
+    container = client.containers.run("docker"+data["DockerID"], ports={80:chosenPort}, detach=True)
+    
+    for i in range(1,4):
+        if ports[f"{i}"]["port"] == chosenPort:
+            ports[f"{i}"]["containerID"] = container.short_id
+            ports[f"{i}"]["container"] = data["DockerID"]
+
+    ps = os.popen('docker ps -a').read()
+    print(ps)       
     
 
 def turnOff(data):
@@ -26,14 +37,30 @@ def turnOff(data):
     if(data["DockerID"] not in ps):
         print("----- Container non in esecuzione! Impossibile spegnerlo -----")
     else:
-        print("----- Stoppo il container con image : docker" + data["DockerID"] + " -----")
         client = docker.from_env()
         container_list = client.containers.list()
-        for container in container_list:
-            if("docker"+data["DockerID"]+":latest" == container.image.tags[0]):
-                cont = client.containers.get(container.short_id)
-                cont.stop()
-        ps = os.popen('docker ps -a').read()    
+
+        if data["port"] != None:   #PORT SPECIFIED
+            for i in range(1,4):
+                if ports[f"{i}"]["port"] == data["port"] and ports[f"{i}"]["container"] == data["DockerID"]:
+                    cont = client.containers.get(ports[f"{i}"]["containerID"])
+                    print("----- Stoppo il container con image : docker" + data["DockerID"] + " sulla porta " + str(ports[f"{i}"]["port"]) + " -----")
+                    cont.stop()
+                    ports[f"{i}"]["container"] = None
+                    ports[f"{i}"]["containerID"] = None
+                    break
+            print("******   ERRORE PORTA INSERITA  ******")    #
+        else:
+            for container in container_list:
+                if("docker"+data["DockerID"]+":latest" == container.image.tags[0]):
+                    cont = client.containers.get(container.short_id)
+                    print("----- Stoppo i container con image : docker" + data["DockerID"] + " -----")
+                    cont.stop()
+            for i in range(1,4):
+                if ports[f"{i}"]["container"] == data["DockerID"]:
+                    ports[f"{i}"]["containerID"] = None
+                    ports[f"{i}"]["container"] = None
+        ps = os.popen('docker ps -a').read()
     print(ps)
 
 
@@ -50,19 +77,29 @@ class MyServer(BaseHTTPRequestHandler):
     def do_POST(self):
         self.send_response(200)
         text = self.rfile.read(int(self.headers['Content-Length']))
+        self.end_headers()
         data = json.loads(text.decode('utf-8'))
+        chosenPort = 0
         if(data["action"] == "TurnOn"):
-            turnOn(data)
+            for i in range(1,4):
+                if ports[f"{i}"]["containerID"] == None:
+                    #ports[f"{i}"]["container"] = data["DockerID"]
+                    chosenPort = ports[f"{i}"]["port"]
+                    break
+            turnOn(data, chosenPort)
+            self.wfile.write(str(chosenPort).encode('utf-8'))     #get the number of docker 
         elif(data["action"] == "TurnOff"):
             turnOff(data)
-        self.end_headers()
+        elif(data["action"] == "print"):
+            ps = os.popen('docker ps -a').read()
+            self.wfile.write(ps.encode('utf-8'))
 
         return
 
 if __name__ == '__main__':
     server = HTTPServer(('', 8000), MyServer)
     print('Server in esecuzione...')
-    # Avvio server
+# Avvio server
     try:
         server.serve_forever()
     except KeyboardInterrupt:

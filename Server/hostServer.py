@@ -31,6 +31,41 @@ class MyServer(BaseHTTPRequestHandler):
         dataJson = json.loads(textByte.decode('utf-8'))
         self.end_headers()
 
+        if dataJson["action"] == "TurnOff":
+            if dataJson["RaspberryIP"] != None:    #RASPBERRY specificato
+                try:
+                    r = requests.post(f'http://{dataJson["RaspberryIP"]}:8000', data=textByte)
+                    self.wfile.write("turn Off ".format(self.path).encode('utf-8'))
+                except:
+                    pass                
+                return
+            else:
+                try:
+                    r1 = requests.post(f'http://{IPRPI1}:8000', data=textByte)
+                except:
+                    pass
+                try:
+                    r2 = requests.post(f'http://{IPRPI2}:8000', data=textByte)
+                except:
+                    pass
+
+                self.wfile.write("turn Off ".format(self.path).encode('utf-8'))
+                return
+        elif dataJson["action"] == "print":
+                r1 = ""
+                r2 = ""
+                try:
+                    r1 = requests.post(f'http://{IPRPI1}:8000', data=textByte)
+                except:
+                    pass
+                try:
+                    r2 = requests.post(f'http://{IPRPI2}:8000', data=textByte)
+                except:
+                    pass
+                
+                resp = f"RASPBERRY 1 - {IPRPI1}\n\n{r1}\nRASPBERRY 2 - {IPRPI2}\n\n{r2}"
+                self.wfile.write(resp.encode('utf-8'))
+                return
 
         try:
             r = requests.get(f'http://{IPRPI1}:8000')    #RASPBERRY 1
@@ -39,7 +74,7 @@ class MyServer(BaseHTTPRequestHandler):
             n1 = int(r.text)
             if n1<MAX_CONTAINERS:  #se c'è posto               
                 r = requests.post(f'http://{IPRPI1}:8000', data=textByte)
-                self.wfile.write("Eseguo il docker sul Raspy 1".format(self.path).encode('utf-8'))
+                self.wfile.write(f"Eseguo il container sul Raspy 1 ({IPRPI1}) sulla porta {r.text}".format(self.path).encode('utf-8'))
                 return
             else:
                 print("R1FULL")
@@ -54,7 +89,7 @@ class MyServer(BaseHTTPRequestHandler):
             if n2<MAX_CONTAINERS:
                 r = requests.post(f'http://{IPRPI2}:8000', data=textByte)
 
-                self.wfile.write("Eseguo il docker sul Raspy 2".format(self.path).encode('utf-8'))
+                self.wfile.write(f"Eseguo il container sul Raspy 2 ({IPRPI2}) sulla porta {r.text}".format(self.path).encode('utf-8'))
                 return
 
         except:
@@ -67,17 +102,17 @@ class MyServer(BaseHTTPRequestHandler):
             sleep(5)
             r = requests.post(f'http://{IPRPI1}:8000', data=textByte)
 
-            self.wfile.write("Eseguo il docker sul Raspy 1".format(self.path).encode('utf-8'))
+            self.wfile.write(f"Eseguo il container sul Raspy 1 ({IPRPI1}) sulla porta {r.text}".format(self.path).encode('utf-8'))
         elif R2off:    #RPI2 OFF
             send_magic_packet(MACRPI2)
             sleep(5)
             r = requests.post(f'http://{IPRPI2}:8000', data=textByte)
 
-            self.wfile.write("Eseguo il docker sul Raspy 2".format(self.path).encode('utf-8'))
+            self.wfile.write(f"Eseguo il container sul Raspy 2 ({IPRPI2}) sulla porta {r.text}".format(self.path).encode('utf-8'))
         else:           #BOTH FULL
             print("SEGMENTATION FAULT")
 
-            self.wfile.write("Segmentation Fault".format(self.path).encode('utf-8'))
+            self.wfile.write("Segmentation Fault (spazio nei server non disponibile, riprova più tardi...)".format(self.path).encode('utf-8'))
 
         return
 
