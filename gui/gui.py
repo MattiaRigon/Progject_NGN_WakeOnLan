@@ -147,9 +147,9 @@ class Ui_MainWindow(object):
         self.label_13.setGeometry(QtCore.QRect(10, 210, 140, 21))
         self.label_13.setObjectName("label_13")
         self.updateButton = QtWidgets.QPushButton(self.scrollAreaWidgetContents_4)
-        self.updateButton.setGeometry(QtCore.QRect(30, 320, 101, 21))
-        self.updateButton.setObjectName("turnofButton_2")
-        self.updateButton.clicked.connect(self.update)
+        self.updateButton.setGeometry(QtCore.QRect(30, 300, 100, 40))
+        self.updateButton.setObjectName("updateButton")
+        self.updateButton.clicked.connect(self.updatestatus)
 
         self.label_azioni = QtWidgets.QLabel(self.centralwidget)
         self.label_azioni.setFont(QFont('Arial', 10))
@@ -202,13 +202,13 @@ class Ui_MainWindow(object):
         self.label_5.setText(_translate("MainWindow", "PORT :"))
         self.label_6.setText(_translate("MainWindow", "STATUS "))
         self.label.setText(_translate("MainWindow", "RASPBERRY 1:"))
-        self.label_7.setText(_translate("MainWindow", "A"))
-        self.label_8.setText(_translate("MainWindow", "C"))
-        self.label_9.setText(_translate("MainWindow", "N"))
-        self.label_10.setText(_translate("MainWindow", "V"))
-        self.label_11.setText(_translate("MainWindow", "BFS"))
+        self.label_7.setText(_translate("MainWindow", ""))
+        self.label_8.setText(_translate("MainWindow", ""))
+        self.label_9.setText(_translate("MainWindow", ""))
+        self.label_10.setText(_translate("MainWindow", ""))
+        self.label_11.setText(_translate("MainWindow", ""))
         self.label_12.setText(_translate("MainWindow", "RASPBERRY 2:"))
-        self.label_13.setText(_translate("MainWindow", "V 2:"))
+        self.label_13.setText(_translate("MainWindow", ""))
         self.label_azioni.setText(_translate("MainWindow", "Ultime azioni:"))
 
         self.label_azioni_1.setText(_translate("MainWindow", ""))
@@ -271,6 +271,7 @@ class Ui_MainWindow(object):
             else :
                 data["port"] = None
             
+            print(data)
             r = requests.post(SERVER_IP,json=data)
             if(len(ultime_azioni) >2):
                 ultime_azioni.pop(0)
@@ -285,29 +286,73 @@ class Ui_MainWindow(object):
 
         global docker_selected
 
-        print("Richiesta TURN OFF docker : " + docker_selected)
-        data["action"] = "TurnOff"
-        data["DockerID"] = docker_selected.replace("docker","")
-        data["RaspberryID"] = raspberry_selected
+        if(docker_selected != ""):
 
-        if(self.textBrowser.text() != ""):
-            data["port"] = self.textBrowser.text()
-        else :
-            data["port"] = None
-            
-        print(data)
-        r = requests.post(SERVER_IP,json=data)
-        if(len(ultime_azioni) >2):
-            ultime_azioni.pop(0)
-        ultime_azioni.append(str(r.text))
+            print("Richiesta TURN OFF docker : " + docker_selected)
+            data["action"] = "TurnOff"
+            data["DockerID"] = docker_selected.replace("docker","")
+            data["RaspberryID"] = raspberry_selected
 
-        self.update_azioni()
-    
+            if(self.textBrowser.text() != ""):
+                data["port"] = self.textBrowser.text()
+            else :
+                data["port"] = None
+                
+            print(data)
+            r = requests.post(SERVER_IP,json=data)
+            if(len(ultime_azioni) >2):
+                ultime_azioni.pop(0)
+            ultime_azioni.append(str(r.text))
 
+            self.update_azioni()
 
-    def update(self):
+    def updatestatus(self):
+
+        _translate = QtCore.QCoreApplication.translate
+
 
         data["action"] = "print"
-        docker_ps = "IMAGE               PORTS                NAMES\nnginx               0.0.0.0:80->80/tcp   nginxin teoria basta"
-        docker_righe = docker_ps.split()
-    
+        #message = "IMAGE               PORTS                NAMES\nnginx               0.0.0.0:80->80/tcp   nginx\nPINO               0.0.0.0:80->80/tcp   PINO\n\nIMAGE               PORTS                NAMES\nnginx               0.0.0.0:80->80/tcp   nginx\nENRI               0.0.0.0:80->80/tcp   PERRY"
+        
+        r = requests.post(SERVER_IP,json=data)
+        message = r.text
+        docker_ps = message.split("\n\n")    
+        docker_righe = docker_ps[0].split("\n")
+        lista_docker = []
+        for riga in docker_righe:
+            lista_docker.append(riga.split("               "))
+        if(len(lista_docker) == 1): 
+            self.label_7.setText(_translate("MainWindow", lista_docker[0][0]))
+            self.label_8.setText(_translate("MainWindow", ""))
+            self.label_9.setText(_translate("MainWindow", ""))
+
+        if(len(lista_docker) == 2): 
+            self.label_7.setText(_translate("MainWindow", lista_docker[0][0]))
+            self.label_8.setText(_translate("MainWindow", lista_docker[1][0]))
+            self.label_9.setText(_translate("MainWindow", ""))
+        if(len(lista_docker) == 3): 
+            self.label_7.setText(_translate("MainWindow", lista_docker[0][0]))
+            self.label_8.setText(_translate("MainWindow", lista_docker[1][0]))
+            self.label_9.setText(_translate("MainWindow", lista_docker[2][0]))
+        
+
+        docker_righe = docker_ps[1].split("\n")
+        lista_docker = []
+        for riga in docker_righe:
+            lista_docker.append(riga.split("               "))
+        if(len(lista_docker) == 1): 
+            self.label_13.setText(_translate("MainWindow", lista_docker[0][0]))
+            self.label_10.setText(_translate("MainWindow", ""))
+            self.label_11.setText(_translate("MainWindow", ""))
+
+        if(len(lista_docker) == 2): 
+            self.label_13.setText(_translate("MainWindow", lista_docker[0][0]))
+            self.label_10.setText(_translate("MainWindow", lista_docker[1][0]))
+            self.label_11.setText(_translate("MainWindow", ""))
+        if(len(lista_docker) == 3): 
+            self.label_13.setText(_translate("MainWindow", lista_docker[0][0]))
+            self.label_10.setText(_translate("MainWindow", lista_docker[1][0]))
+            self.label_11.setText(_translate("MainWindow", lista_docker[2][0]))
+
+        print(lista_docker)
+        
