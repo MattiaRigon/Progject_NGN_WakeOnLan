@@ -51,7 +51,7 @@ Configure the network settings :
 - configure the second network adapter as a bridge, and set the eth0 IP that you can see on the terminal (using ifconfig)
 - Every time you turn on the pc open the Virtual Network Editor **as admin** 
 
-![network_config](C:\Users\rigon\OneDrive\Documenti\GitHub\Project_NGN_WakeOnLan\network_config.jpeg)
+![network_config](network_config.jpeg)
 
 ### Client
 
