@@ -12,6 +12,7 @@ from PyQt5 import QtCore, QtGui, QtWidgets
 from PyQt5.QtWidgets import * 
 from PyQt5.QtGui import * 
 import requests
+import os
 
 ultime_azioni = [] 
 
@@ -19,14 +20,14 @@ data = {
     "action": "TurnOff",    # "TurnOff", "TurnOn", "print"
     "DockerID": "2",        # "1", "2", "3"
     "port": None,           # None, 8001, 8002, 8003 
-    "RaspberryID": None     #"192.168.43.147", "192.168.43.188"
+    "RaspberryIP": None     #"192.168.43.147", "192.168.43.188"
 }
 
-elenco_docker= ["1","2","3"]
+elenco_docker= ["1","2","3","4","5"]
 docker_selected = ""
 raspberry_selected = None
  
-SERVER_IP = 'http://192.168.1.70:8000/'
+SERVER = 'http://h1server.ngn-project.com:8000/'
 
 RSP_1_active = [""]
 RSP_2_active = [""]
@@ -186,7 +187,11 @@ class Ui_MainWindow(object):
 
     def retranslateUi(self, MainWindow):
         _translate = QtCore.QCoreApplication.translate
-        MainWindow.setWindowTitle(_translate("MainWindow", "MainWindow"))
+        MainWindow.setWindowTitle(_translate("Wake On Lan Project", "Wake On Lan Project"))
+        scriptDir = os.path.dirname(os.path.realpath(__file__))
+
+        MainWindow.setWindowIcon(QtGui.QIcon(scriptDir +"logo.png"))
+
         i=0
         for item in elenco_docker :
             self.radioButton[i].setText(_translate("MainWindow","docker"+ item))
@@ -234,9 +239,9 @@ class Ui_MainWindow(object):
         global raspberry_selected
 
         if(self.radioButton_5.isChecked()):
-            raspberry_selected = self.radioButton_5.text()
+            raspberry_selected = "rpi1.ngn-project.com"
         if(self.radioButton_6.isChecked()):
-            raspberry_selected = self.radioButton_6.text()
+            raspberry_selected = "rpi2.ngn-project.com"
         if(self.radioButton_7.isChecked()):
             raspberry_selected = None
 
@@ -265,14 +270,14 @@ class Ui_MainWindow(object):
 
             data["action"] = "TurnOn"
             data["DockerID"] = docker_selected.replace("docker","")
-            data["RaspberryID"] = raspberry_selected
+            data["RaspberryIP"] = raspberry_selected
             if(self.textBrowser.text() != ""):
                 data["port"] = self.textBrowser.text()
             else :
                 data["port"] = None
             
             print(data)
-            r = requests.post(SERVER_IP,json=data)
+            r = requests.post(SERVER,json=data)
             if(len(ultime_azioni) >2):
                 ultime_azioni.pop(0)
             ultime_azioni.append(str(r.text))
@@ -291,15 +296,15 @@ class Ui_MainWindow(object):
             print("Richiesta TURN OFF docker : " + docker_selected)
             data["action"] = "TurnOff"
             data["DockerID"] = docker_selected.replace("docker","")
-            data["RaspberryID"] = raspberry_selected
+            data["RaspberryIP"] = raspberry_selected
 
             if(self.textBrowser.text() != ""):
-                data["port"] = self.textBrowser.text()
+                data["port"] = int(self.textBrowser.text())
             else :
                 data["port"] = None
                 
             print(data)
-            r = requests.post(SERVER_IP,json=data)
+            r = requests.post(SERVER,json=data)
             if(len(ultime_azioni) >2):
                 ultime_azioni.pop(0)
             ultime_azioni.append(str(r.text))
@@ -310,49 +315,62 @@ class Ui_MainWindow(object):
 
         _translate = QtCore.QCoreApplication.translate
 
-
         data["action"] = "print"
+        data["RaspberryIP"] = raspberry_selected
+
         #message = "IMAGE               PORTS                NAMES\nnginx               0.0.0.0:80->80/tcp   nginx\nPINO               0.0.0.0:80->80/tcp   PINO\n\nIMAGE               PORTS                NAMES\nnginx               0.0.0.0:80->80/tcp   nginx\nENRI               0.0.0.0:80->80/tcp   PERRY"
         
-        r = requests.post(SERVER_IP,json=data)
+        r = requests.post(SERVER,json=data)
         message = r.text
         docker_ps = message.split("\n\n")    
         docker_righe = docker_ps[0].split("\n")
         lista_docker = []
         for riga in docker_righe:
-            lista_docker.append(riga.split("               "))
+            lista_docker.append(riga.split("SPACE"))
+
         if(len(lista_docker) == 1): 
-            self.label_7.setText(_translate("MainWindow", lista_docker[0][0]))
+            self.label_7.setText(_translate("MainWindow", ""))
             self.label_8.setText(_translate("MainWindow", ""))
             self.label_9.setText(_translate("MainWindow", ""))
 
         if(len(lista_docker) == 2): 
-            self.label_7.setText(_translate("MainWindow", lista_docker[0][0]))
-            self.label_8.setText(_translate("MainWindow", lista_docker[1][0]))
+            self.label_7.setText(_translate("MainWindow", lista_docker[1][0]))
+            self.label_8.setText(_translate("MainWindow", ""))
             self.label_9.setText(_translate("MainWindow", ""))
-        if(len(lista_docker) == 3): 
-            self.label_7.setText(_translate("MainWindow", lista_docker[0][0]))
-            self.label_8.setText(_translate("MainWindow", lista_docker[1][0]))
-            self.label_9.setText(_translate("MainWindow", lista_docker[2][0]))
-        
 
+        if(len(lista_docker) == 3): 
+            self.label_7.setText(_translate("MainWindow", lista_docker[1][0]))
+            self.label_8.setText(_translate("MainWindow", lista_docker[2][0]))
+            self.label_9.setText(_translate("MainWindow", ""))
+        if(len(lista_docker) == 4): 
+            self.label_7.setText(_translate("MainWindow", lista_docker[1][0]))
+            self.label_8.setText(_translate("MainWindow", lista_docker[2][0]))
+            self.label_9.setText(_translate("MainWindow", lista_docker[3][0]))
+        
+        cont = 0
+        if docker_righe[0] == " ":
+            cont = 1
         docker_righe = docker_ps[1].split("\n")
         lista_docker = []
         for riga in docker_righe:
-            lista_docker.append(riga.split("               "))
-        if(len(lista_docker) == 1): 
-            self.label_13.setText(_translate("MainWindow", lista_docker[0][0]))
+            lista_docker.append(riga.split("SPACE"))
+        if(len(lista_docker) == 2-cont): 
+            self.label_13.setText(_translate("MainWindow", ""))
+            self.label_10.setText(_translate("MainWindow", ""))
+            self.label_11.setText(_translate("MainWindow", ""))
+        if(len(lista_docker) == 3-cont): 
+            self.label_13.setText(_translate("MainWindow", lista_docker[2-cont][0]))
             self.label_10.setText(_translate("MainWindow", ""))
             self.label_11.setText(_translate("MainWindow", ""))
 
-        if(len(lista_docker) == 2): 
-            self.label_13.setText(_translate("MainWindow", lista_docker[0][0]))
-            self.label_10.setText(_translate("MainWindow", lista_docker[1][0]))
+        if(len(lista_docker) == 4-cont): 
+            self.label_13.setText(_translate("MainWindow", lista_docker[2-cont][0]))
+            self.label_10.setText(_translate("MainWindow", lista_docker[3-cont][0]))
             self.label_11.setText(_translate("MainWindow", ""))
-        if(len(lista_docker) == 3): 
-            self.label_13.setText(_translate("MainWindow", lista_docker[0][0]))
-            self.label_10.setText(_translate("MainWindow", lista_docker[1][0]))
-            self.label_11.setText(_translate("MainWindow", lista_docker[2][0]))
+        if(len(lista_docker) >= 5-cont): 
+            self.label_13.setText(_translate("MainWindow", lista_docker[2-cont][0]))
+            self.label_10.setText(_translate("MainWindow", lista_docker[3-cont][0]))
+            self.label_11.setText(_translate("MainWindow", lista_docker[4-cont][0]))
 
         print(lista_docker)
         
