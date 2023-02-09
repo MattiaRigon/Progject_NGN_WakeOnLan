@@ -59,3 +59,5 @@ Configure the network settings :
 Configure in gui.py the right IP of your machine where is running the hostServer.py
 
 In all the devices if you want to solve your ip address with some hosts names you can modify their local file "hosts".
+
+YouTube video : https://youtu.be/8TnQH61T1vI
