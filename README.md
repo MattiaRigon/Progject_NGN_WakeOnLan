@@ -52,6 +52,7 @@ Configure the network settings :
 - Every time you turn on the pc open the Virtual Network Editor **as admin** 
 
 ![network_config](network_config.jpeg)
+![network_config](network_config2.jpeg)
 
 ### Client
 
