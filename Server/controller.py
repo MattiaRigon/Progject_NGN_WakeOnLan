@@ -1,3 +1,6 @@
+# Controller.py - RYU remote controller to manage the packets traffic in a mininet network
+
+
 from ryu.base import app_manager
 from ryu.controller import ofp_event
 from ryu.controller.handler import MAIN_DISPATCHER
@@ -52,7 +55,7 @@ class SimpleSwitch(app_manager.RyuApp):
         dst = eth.dst
         src = eth.src
 
-        whitelist = ["aa:bb:cc:dd:ee:01", "aa:bb:cc:dd:ee:02"]
+        whitelist = ["aa:bb:cc:dd:ee:01"]
 
         dpid = datapath.id
         self.mac_to_port.setdefault(dpid, {})
